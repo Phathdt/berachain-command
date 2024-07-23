@@ -1,0 +1,15 @@
+{
+  "name": "berachain-command",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Phathdt <phathdt379@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.1"
+  }
+}
