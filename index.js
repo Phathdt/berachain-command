@@ -1,45 +1,49 @@
 import { ethers } from 'ethers'
 import 'dotenv/config'
 
-async function callQueueNewCuttingBoard(
-  contractAddress,
+async function queueNewCuttingBoard(
   signer,
-  validatorAddress,
-  futureBlockNumber,
-  recipients
+  contractAddress,
+  valCoinbase,
+  startBlock,
+  weights
 ) {
   const abi = [
-    'function queueNewCuttingBoard(address,uint64,(address,uint96)[])',
+    'function queueNewCuttingBoard(address valCoinbase, uint64 startBlock, tuple(address receiver, uint96 percentageNumerator)[] weights) external',
   ]
 
   const contract = new ethers.Contract(contractAddress, abi, signer)
 
   try {
-    console.log('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-    // const estimatedGas = await contract.queueNewCuttingBoard.estimateGas(
-    //   validatorAddress,
-    //   BigInt(futureBlockNumber),
-    //   recipients
-    // )
-    // console.log('Estimated gas:', estimatedGas.toString())
-
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    const tx = await contract.queueNewCuttingBoard(
-      validatorAddress,
-      futureBlockNumber,
-      recipients
+    const estimatedGas = await contract.queueNewCuttingBoard.estimateGas(
+      valCoinbase,
+      startBlock,
+      weights
     )
+    console.log('Estimated gas:', estimatedGas.toString())
+
+    const tx = await contract.queueNewCuttingBoard(
+      valCoinbase,
+      startBlock,
+      weights
+    )
+
     console.log('Transaction sent:', tx.hash)
+
     const receipt = await tx.wait()
     console.log('Transaction confirmed in block:', receipt.blockNumber)
+    console.log('Gas used:', receipt.gasUsed.toString())
+
+    return receipt
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error queuing new cutting board:', error)
+    return null
   }
 }
 
 async function main() {
   const provider = new ethers.JsonRpcProvider(
-    'https://berachain-testnet-el.contributiondao.com/'
+    'https://berachain-v2-testnet-evm-rpc.blacknodes.net/'
   )
 
   const blockNumber = await provider.getBlockNumber()
@@ -55,18 +59,27 @@ async function main() {
   console.log('🚀 ~ main ~ VALIDATOR_ADDRESS:', VALIDATOR_ADDRESS)
   const FUTURE_BLOCK_NUMBER = BigInt(blockNumber + 250)
 
-  const RECIPIENTS = [
-    ['0x2E8410239bB4b099EE2d5683e3EF9d6f04E321CC', BigInt('4000')],
-    ['0xAD57d7d39a487C04a44D3522b910421888Fb9C6d', BigInt('3000')],
-    ['0xC5Cb3459723B828B3974f7E58899249C2be3B33d', BigInt('3000')],
+  const weights = [
+    {
+      receiver: '0x2E8410239bB4b099EE2d5683e3EF9d6f04E321CC',
+      percentageNumerator: 4000n,
+    },
+    {
+      receiver: '0xAD57d7d39a487C04a44D3522b910421888Fb9C6d',
+      percentageNumerator: 3000n,
+    },
+    {
+      receiver: '0xC5Cb3459723B828B3974f7E58899249C2be3B33d',
+      percentageNumerator: 3000n,
+    },
   ]
 
-  await callQueueNewCuttingBoard(
-    contractAddress,
+  await queueNewCuttingBoard(
     signer,
+    contractAddress,
     VALIDATOR_ADDRESS,
     FUTURE_BLOCK_NUMBER,
-    RECIPIENTS
+    weights
   )
 }
 

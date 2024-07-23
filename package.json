@@ -6,7 +6,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "read": "node index-read.js",
+    "parse": "node index-parse.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
